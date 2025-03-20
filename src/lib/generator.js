@@ -112,6 +112,7 @@ export function generateWords() {
 			let otherLetters = word.replace(letter, '');
 			let perms = permute(otherLetters, otherLetters.length);
 			validPerms = sortByFrequency(filterWords(perms, letter === 'q' ? SCRABBLE4 : COMMON4)); // need more q words
+			validPerms = filterWords(validPerms, SCRABBLE4); // filter out non scrabble common words
 		}
 
 		if (word) {
