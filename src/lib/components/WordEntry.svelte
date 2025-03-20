@@ -1,4 +1,5 @@
 <script>
+	import { WORDLEALL } from '$lib/bigwords';
 	import { Label } from '$lib/components/ui/label';
 	import { extraLetterCounts } from '$lib/stores/gameStore';
 
@@ -6,6 +7,7 @@
 	export let answer = '';
 	let userInput = '';
 	let previousExtras = '';
+	let wordStatus = '';
 
 	// Recalculate extra letters
 	$: {
@@ -34,23 +36,35 @@
 			}
 		}
 
+		if (userInput.length === 0) {
+			wordStatus = '';
+		} else if (userInput.length < 5) {
+			wordStatus = 'short';
+		} else if (!WORDLEALL.includes(userInput)) {
+			wordStatus = 'not recognized';
+		} else {
+			wordStatus = '';
+		}
+		if (extras.length > 1) {
+			wordStatus = `missing letter from ${word}`;
+		}
 		previousExtras = extras.join('');
 	}
 </script>
 
-<div class="flex items-center justify-center gap-4 font-extrabold">
+<div class="m-2 flex items-center justify-center gap-4 font-extrabold">
 	<!-- Ensures consistent width for left and right sections -->
-	<div class="relative flex w-[200px] items-center justify-between">
+	<div class="relative flex items-center justify-between">
 		<!-- Left side: Word + Extra Letters -->
-		<Label class="min-w-[100px] text-right uppercase">
+		<Label class="w-32 text-xl uppercase" for={word}>
 			{word} + {previousExtras || '__'} =
 		</Label>
 
 		<!-- Overlayed container for styling input -->
-		<div class="relative w-24">
+		<div class="relative w-32 text-xl">
 			<!-- Styled input text overlay -->
 			<div
-				class="pointer-events-none absolute inset-0 flex h-full w-full items-center justify-center text-center uppercase"
+				class="pointer-events-none absolute inset-0 flex h-full max-h-[38px] w-full items-center justify-center text-center uppercase"
 				style="color: inherit;"
 			>
 				{#each userInput.split('') as char, i}
@@ -73,17 +87,23 @@
 			<!-- Transparent Input Field -->
 			<input
 				type="text"
+				id={word}
 				pattern="[a-zA-Z]{5}"
 				bind:value={userInput}
 				maxlength="5"
-				class="w-24 rounded border border-gray-600 bg-transparent p-1 text-center uppercase text-transparent caret-white"
+				class="w-32 rounded border border-gray-600 bg-transparent p-1 text-center uppercase text-transparent caret-white"
 				placeholder=""
 			/>
+
+			<!-- TODO -->
+			{#if wordStatus.length}
+				<p class="text-sm text-muted-foreground">{wordStatus}</p>
+			{/if}
 		</div>
 
 		<!-- Right side: Answer (optional) -->
 		{#if answer}
-			<span class="min-w-[100px] text-left uppercase">{answer}</span>
+			<span class="text-left text-xl uppercase">{answer}</span>
 		{/if}
 	</div>
 </div>

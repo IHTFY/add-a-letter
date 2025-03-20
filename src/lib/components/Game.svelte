@@ -51,7 +51,7 @@
 <AlphabetBoard />
 
 <!-- Show the puzzle words in two columns -->
-<div class="mt-6 grid grid-cols-2 gap-4">
+<div class="mt-6 grid grid-cols-4 gap-2">
 	{#each $fourLetterWords as word, i}
 		<WordEntry {word} answer={$showAnswers ? $fiveLetterWords[i] : ''} />
 	{/each}

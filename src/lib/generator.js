@@ -1,4 +1,4 @@
-import { FREQ4, FREQ5, SCRABBLE4, WORDLES } from '$lib/bigwords.js';
+import { COMMON4, FREQ4, FREQ5, SCRABBLE4, WORDLES } from '$lib/bigwords.js';
 import { fiveLetterWords, fourLetterWords } from '$lib/stores/gameStore.js';
 
 /**
@@ -111,12 +111,14 @@ export function generateWords() {
 			// Generate permutations for the other letters
 			let otherLetters = word.replace(letter, '');
 			let perms = permute(otherLetters, otherLetters.length);
-			validPerms = sortByFrequency(filterWords(perms, SCRABBLE4));
+			validPerms = sortByFrequency(filterWords(perms, letter === 'q' ? SCRABBLE4 : COMMON4)); // need more q words
 		}
 
 		if (word) {
-			// 4-letter word: pick the highest-frequency permutation
-			let bestPermutation = validPerms.length ? validPerms[0] : '';
+			// 4-letter word: pick a high frequency permutation
+			let bestPermutation = validPerms.length
+				? validPerms[Math.floor(validPerms.length * Math.random() ** 2)]
+				: '';
 			fourLetterList.push(bestPermutation);
 
 			// 5-letter word: the original Wordle word
