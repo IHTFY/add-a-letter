@@ -93,6 +93,7 @@
 				maxlength="5"
 				class="w-32 rounded border border-gray-600 bg-transparent p-1 text-center uppercase text-transparent caret-white"
 				placeholder=""
+				autocomplete="off"
 			/>
 
 			<!-- TODO -->
