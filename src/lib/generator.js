@@ -1,5 +1,5 @@
-import { COMMON4, FREQ4, FREQ5, SCRABBLE4, WORDLES } from '$lib/bigwords.js';
-import { fiveLetterWords, fourLetterWords } from '$lib/stores/gameStore.js';
+import { COMMON4, FREQ4, FREQ5, SCRABBLE4, WORDLES } from '#lib/bigwords.js';
+import { fiveLetterWords, fourLetterWords } from '#lib/stores/gameStore.js';
 
 /**
  * Shuffle an array

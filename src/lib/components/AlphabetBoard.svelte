@@ -2,17 +2,20 @@
 	// @ts-nocheck
 	// how do you set the type of an imported store? probably easier to workaround with typescript
 
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import { extraLetterCounts } from '$lib/stores/gameStore';
+	import { Button } from '#lib/components/ui/button/index.js';
+	import { extraLetterCounts } from '#lib/stores/gameStore.js';
 </script>
 
-<div class="mt-4 grid grid-cols-[repeat(13,auto)] justify-center gap-2">
-	{#each 'abcdefghijklmnopqrstuvwxyz'.split('') as letter}
+<div
+	class="sticky top-0 z-10 mx-auto grid w-full max-w-xl grid-cols-13 gap-1 bg-background py-2 two-pane:static two-pane:grid-cols-9 two-pane:gap-1.5 two-pane:py-0"
+>
+	{#each 'abcdefghijklmnopqrstuvwxyz'.split('') as letter (letter)}
 		<Button
-			class="h-10 w-10 uppercase {$extraLetterCounts?.[letter] > 1
-				? 'bg-red-500 outline-dotted outline-red-500'
-				: 'bg-green-500'}  p-0 text-3xl"
+			class="aspect-square h-auto w-full p-0 text-lg leading-none uppercase sm:text-2xl 2xl:text-3xl short:text-lg {$extraLetterCounts?.[
+				letter
+			] > 1
+				? 'bg-red-500 outline-red-500 outline-dotted'
+				: 'bg-green-500'}"
 			disabled={$extraLetterCounts?.[letter] > 0}
 		>
 			{letter}
