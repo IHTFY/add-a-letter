@@ -2,8 +2,10 @@
 	import Moon from '@lucide/svelte/icons/moon';
 	import Sun from '@lucide/svelte/icons/sun';
 	import { Button } from '#lib/components/ui/button/index.js';
+	import { dictionary } from '#lib/dictionary.js';
 	import {
 		answers,
+		extraLetterCounts,
 		fiveLetterWords,
 		fourLetterWords,
 		newGame,
@@ -12,8 +14,20 @@
 	} from '#lib/stores/gameStore.js';
 	import { toggleMode } from 'mode-watcher';
 	import { onMount } from 'svelte';
+	import AdSlot from './AdSlot.svelte';
 	import AlphabetBoard from './AlphabetBoard.svelte';
 	import WordEntry from './WordEntry.svelte';
+
+	// A puzzle is done when the player reveals the answers, or every letter is used once with
+	// a real word on every line. The ad slot appears once they have played this visit and the
+	// puzzle is done, so opening the page on a finished puzzle shows no ad.
+	let played = false;
+	let adKey = '';
+	$: solved =
+		$fourLetterWords.length > 0 &&
+		Object.values($extraLetterCounts).every((count) => count === 1) &&
+		$answers.every((/** @type {string} */ answer) => $dictionary.words?.includes(answer));
+	$: if (played && ($showAnswers || solved)) adKey = $fourLetterWords.join(' ');
 
 	// On component mount, if there are no 4-letter words,
 	// generate a puzzle. Otherwise, use what's in localStorage.
@@ -33,6 +47,7 @@
 	}
 
 	function handleShowAnswers() {
+		played = true;
 		showAnswers.set(true);
 	}
 </script>
@@ -86,10 +101,18 @@ board can stick to the top. Sidebar beside the words on wide and sideways screen
 				rel="noopener"
 				class="hover:text-foreground hover:underline">Support ♥</a
 			>
+			·
+			<a
+				href="https://ihtfy.com/privacy"
+				target="_blank"
+				rel="noopener"
+				class="hover:text-foreground hover:underline">Privacy</a
+			>
 		</footer>
 	</aside>
 
 	<div
+		on:input={() => (played = true)}
 		class="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] sm:gap-x-6 2xl:grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] 2xl:gap-y-7 short:grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] short:gap-x-3 short:gap-y-5 short:py-3"
 	>
 		{#each $fourLetterWords as word, i (i)}
@@ -97,3 +120,7 @@ board can stick to the top. Sidebar beside the words on wide and sideways screen
 		{/each}
 	</div>
 </main>
+
+{#if adKey}
+	<AdSlot {adKey} />
+{/if}
