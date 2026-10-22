@@ -15,6 +15,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json && tsc -p src/service-worker/jsconfig.json --noEmit",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
 		"format": "prettier --write .",
+		"test": "vitest run",
 		"lint": "prettier --check . && eslint ."
 	},
 	"devDependencies": {
@@ -33,6 +34,7 @@
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.23.0",
 		"globals": "^17.13.0",
+		"happy-dom": "^21.0.4",
 		"prettier": "^3.9.9",
 		"prettier-plugin-svelte": "^4.1.1",
 		"prettier-plugin-tailwindcss": "^0.8.1",
@@ -42,7 +44,8 @@
 		"tailwind-variants": "^3.3.1",
 		"tailwindcss": "^4.3.3",
 		"typescript": "^6.0.3",
-		"vite": "^8.3.3"
+		"vite": "^8.3.3",
+		"vitest": "^5.0.5"
 	},
 	"dependencies": {
 		"@lucide/svelte": "^1.52.0",
