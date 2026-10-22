@@ -1,4 +1,4 @@
-import { COMMON4, FREQ4, FREQ5, SCRABBLE4, WORDLES } from '#lib/bigwords.js';
+import { COMMON4, FREQ4, SCRABBLE4, WORDLES } from '#lib/bigwords.js';
 import { fiveLetterWords, fourLetterWords } from '#lib/stores/gameStore.js';
 
 /**
@@ -61,16 +61,14 @@ const filterWords = (words, dict) => words.filter((word) => dict.includes(word))
 const getWordWithLetter = (letter, dict) => dict.find((word) => word.includes(letter)) || '';
 
 /**
- * Get frequency of a word
+ * Get frequency of a 4-letter word. Only 4-letter permutations are ever sorted,
+ * so the 5-letter frequency list stays out of the bundle.
  * @param {string} word The word to get frequency of
  * @returns {number} The frequency of the word
  */
 const getFrequency = (word) => {
-	const len = word.length;
-	if (len === 4) {
+	if (word.length === 4) {
 		return Number(FREQ4.find((x) => x[0] === word)?.slice(1)[0]) || 0;
-	} else if (len === 5) {
-		return Number(FREQ5.find((x) => x[0] === word)?.slice(1)[0]) || 0;
 	} else {
 		console.error('Unsupported word length');
 		return 0;
