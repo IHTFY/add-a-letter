@@ -1,5 +1,4 @@
 <script>
-	import { WORDLEALL } from '#lib/bigwords.js';
 	import { Label } from '#lib/components/ui/label/index.js';
 	import { extraLetterCounts } from '#lib/stores/gameStore.js';
 
@@ -10,6 +9,12 @@
 	let previousExtras = '';
 	/** @type {string} */
 	let wordStatus;
+	// The full dictionary is large, so it loads when the first 5-letter entry needs checking.
+	/** @type {string[] | undefined} */
+	let dictionary;
+	const loadDictionary = async () => {
+		dictionary = (await import('#lib/wordleall.js')).WORDLEALL;
+	};
 
 	// Recalculate extra letters
 	$: {
@@ -45,7 +50,10 @@
 			wordStatus = '';
 		} else if (userInput.length < 5) {
 			wordStatus = 'short';
-		} else if (!WORDLEALL.includes(userInput)) {
+		} else if (!dictionary) {
+			loadDictionary();
+			wordStatus = '';
+		} else if (!dictionary.includes(userInput)) {
 			wordStatus = 'not recognized';
 		} else {
 			wordStatus = '';
