@@ -1,4 +1,5 @@
 <script>
+	import { dictionary, loadDictionary } from '#lib/dictionary.js';
 	import { Label } from '#lib/components/ui/label/index.js';
 	import { extraLetterCounts } from '#lib/stores/gameStore.js';
 
@@ -9,12 +10,6 @@
 	let previousExtras = '';
 	/** @type {string} */
 	let wordStatus;
-	// The full dictionary is large, so it loads when the first 5-letter entry needs checking.
-	/** @type {string[] | undefined} */
-	let dictionary;
-	const loadDictionary = async () => {
-		dictionary = (await import('#lib/wordleall.js')).WORDLEALL;
-	};
 
 	// Recalculate extra letters
 	$: {
@@ -50,10 +45,10 @@
 			wordStatus = '';
 		} else if (userInput.length < 5) {
 			wordStatus = 'short';
-		} else if (!dictionary) {
-			loadDictionary();
-			wordStatus = '';
-		} else if (!dictionary.includes(userInput)) {
+		} else if (!$dictionary.words) {
+			if (!$dictionary.failed) loadDictionary();
+			wordStatus = $dictionary.failed ? "Can't check words offline yet" : '';
+		} else if (!$dictionary.words.includes(userInput)) {
 			wordStatus = 'not recognized';
 		} else {
 			wordStatus = '';
@@ -103,6 +98,7 @@
 			id={word}
 			pattern="[a-zA-Z]{5}"
 			bind:value={userInput}
+			on:input={() => $dictionary.failed && loadDictionary()}
 			maxlength="5"
 			class="h-9 w-full rounded border border-gray-600 bg-transparent text-center text-transparent uppercase caret-foreground 2xl:h-11 short:h-8"
 			placeholder=""
