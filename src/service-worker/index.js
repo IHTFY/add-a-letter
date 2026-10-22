@@ -49,22 +49,24 @@ self.addEventListener('message', (event) => {
 self.addEventListener('fetch', (event) => {
 	if (event.request.method !== 'GET') return;
 
+	// Other sites' requests, including the ad loader, AdSense, and its consent message, go
+	// straight to the network: never cached, never answered by this worker.
+	if (new URL(event.request.url).origin !== self.location.origin) return;
+
 	async function respond() {
 		const url = new URL(event.request.url);
 		const cache = await caches.open(CACHE);
 
-		if (url.origin === self.location.origin) {
-			// The app's own files always come from this version's cache, never the network.
-			if (PRECACHED.has(url.pathname)) {
-				const cached = await cache.match(url.pathname);
-				if (cached) return cached;
-			}
+		// The app's own files always come from this version's cache, never the network.
+		if (PRECACHED.has(url.pathname)) {
+			const cached = await cache.match(url.pathname);
+			if (cached) return cached;
+		}
 
-			// Page loads, including the installed app's start URL with a query, get the cached page.
-			if (event.request.mode === 'navigate') {
-				const shell = await cache.match(SHELL);
-				if (shell) return shell;
-			}
+		// Page loads, including the installed app's start URL with a query, get the cached page.
+		if (event.request.mode === 'navigate') {
+			const shell = await cache.match(SHELL);
+			if (shell) return shell;
 		}
 
 		// Anything else goes to the network, falling back to the cache when offline.
