@@ -2,10 +2,10 @@
 	import Moon from '@lucide/svelte/icons/moon';
 	import Sun from '@lucide/svelte/icons/sun';
 	import { Button } from '#lib/components/ui/button/index.js';
+	import { isSolved } from '#lib/ads.js';
 	import { dictionary } from '#lib/dictionary.js';
 	import {
 		answers,
-		extraLetterCounts,
 		fiveLetterWords,
 		fourLetterWords,
 		newGame,
@@ -23,10 +23,7 @@
 	// puzzle is done, so opening the page on a finished puzzle shows no ad.
 	let played = false;
 	let adKey = '';
-	$: solved =
-		$fourLetterWords.length > 0 &&
-		Object.values($extraLetterCounts).every((count) => count === 1) &&
-		$answers.every((/** @type {string} */ answer) => $dictionary.words?.includes(answer));
+	$: solved = isSolved($fourLetterWords, $answers, $dictionary.words);
 	$: if (played && ($showAnswers || solved)) adKey = $fourLetterWords.join(' ');
 
 	// On component mount, if there are no 4-letter words,
