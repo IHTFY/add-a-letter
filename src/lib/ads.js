@@ -30,7 +30,7 @@ export function showAd(box, key) {
 		document.head.appendChild(script);
 	});
 	loader.then(
-		() => window.ihtfyAds.show(box, key),
+		() => box.isConnected && window.ihtfyAds.show(box, key),
 		() => {}
 	);
 }
