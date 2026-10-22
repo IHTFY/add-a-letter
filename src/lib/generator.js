@@ -1,4 +1,4 @@
-import { COMMON4, FREQ4, SCRABBLE4, WORDLES } from '#lib/bigwords.js';
+import { COMMON4, FREQ4_RANKS, SCRABBLE4, WORDLES } from '#lib/bigwords.js';
 import { fiveLetterWords, fourLetterWords } from '#lib/stores/gameStore.js';
 
 /**
@@ -60,15 +60,25 @@ const filterWords = (words, dict) => words.filter((word) => dict.includes(word))
  */
 const getWordWithLetter = (letter, dict) => dict.find((word) => word.includes(letter)) || '';
 
+/** @type {Map<string, number> | undefined} */
+let frequencyScores;
+
 /**
- * Get frequency of a 4-letter word. Only 4-letter permutations are ever sorted,
+ * Get how common a 4-letter word is. Only 4-letter permutations are ever sorted,
  * so the 5-letter frequency list stays out of the bundle.
  * @param {string} word The word to get frequency of
- * @returns {number} The frequency of the word
+ * @returns {number} A score that is higher for more common words, 0 for unlisted words
  */
 const getFrequency = (word) => {
 	if (word.length === 4) {
-		return Number(FREQ4.find((x) => x[0] === word)?.slice(1)[0]) || 0;
+		if (!frequencyScores) {
+			const scores = new Map();
+			FREQ4_RANKS.forEach((group, i) => {
+				for (const w of group.split(' ')) scores.set(w, FREQ4_RANKS.length - i);
+			});
+			frequencyScores = scores;
+		}
+		return frequencyScores.get(word) || 0;
 	} else {
 		console.error('Unsupported word length');
 		return 0;
