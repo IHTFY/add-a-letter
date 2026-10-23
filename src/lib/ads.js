@@ -34,7 +34,13 @@ export function loadForBuyer() {
 	} catch {
 		// Storage off: the cookie may still hold the token.
 	}
-	if (stored || /(?:^|;\s*)ihtfy-ad-free=/.test(document.cookie)) load().catch(() => {});
+	let cookie = '';
+	try {
+		cookie = document.cookie;
+	} catch {
+		// Cookies off too (a sandboxed frame): the page must still start.
+	}
+	if (stored || /(?:^|;\s*)ihtfy-ad-free=/.test(cookie)) load().catch(() => {});
 }
 
 /**

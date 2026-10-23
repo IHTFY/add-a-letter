@@ -64,4 +64,24 @@ describe('loadForBuyer', () => {
 		loadForBuyer();
 		expect(added).toHaveLength(1);
 	});
+
+	it('starts quietly when storage and cookies both throw', async () => {
+		vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+			throw new Error('denied');
+		});
+		Object.defineProperty(document, 'cookie', {
+			configurable: true,
+			get() {
+				throw new Error('denied');
+			}
+		});
+		try {
+			const { loadForBuyer } = await loadAds();
+			expect(() => loadForBuyer()).not.toThrow();
+			expect(added).toHaveLength(0);
+		} finally {
+			// @ts-expect-error removes the own property added above
+			delete document.cookie;
+		}
+	});
 });
