@@ -23,7 +23,7 @@ afterEach(() => {
 	vi.restoreAllMocks();
 	delete (/** @type {any} */ (window).ihtfyAds);
 	localStorage.clear();
-	document.cookie = 'ihtfy-ad-free=; Max-Age=0';
+	document.cookie = 'ihtfy-ad-free=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
 });
 
 describe('showAd', () => {
@@ -83,5 +83,47 @@ describe('loadForBuyer', () => {
 			// @ts-expect-error removes the own property added above
 			delete document.cookie;
 		}
+	});
+});
+
+describe('adForScreen', () => {
+	it('gives the results screen a box', async () => {
+		const { adForScreen, AD_SLOT } = await loadAds();
+		expect(adForScreen('results', { buyer: false })).toEqual({ slot: AD_SLOT });
+	});
+
+	it('never gives the play screen or any other screen a box', async () => {
+		const { adForScreen } = await loadAds();
+		for (const screen of ['play', 'home', 'menu', 'levels', 'stats', 'help', 'settings']) {
+			expect(adForScreen(screen, { buyer: false })).toBeNull();
+		}
+	});
+
+	it('never gives a buyer a box', async () => {
+		const { adForScreen } = await loadAds();
+		expect(adForScreen('results', { buyer: true })).toBeNull();
+		expect(adForScreen('play', { buyer: true })).toBeNull();
+	});
+});
+
+describe('mayBeAdFree', () => {
+	it('is true with a token in localStorage or the cookie, false without', async () => {
+		const { mayBeAdFree } = await loadAds();
+		expect(mayBeAdFree()).toBe(false);
+		localStorage.setItem('ihtfy-ad-free', 'token');
+		expect(mayBeAdFree()).toBe(true);
+		localStorage.clear();
+		document.cookie = 'ihtfy-ad-free=token';
+		expect(mayBeAdFree()).toBe(true);
+	});
+});
+
+describe('fitAdSize', () => {
+	it('takes the largest size whose aside fits, and none when nothing does', async () => {
+		const { fitAdSize, AD_ASIDE_EXTRA } = await loadAds();
+		expect(fitAdSize(AD_ASIDE_EXTRA + 250)).toBe('300x250');
+		expect(fitAdSize(AD_ASIDE_EXTRA + 249)).toBe('320x100');
+		expect(fitAdSize(AD_ASIDE_EXTRA + 99)).toBe('320x50');
+		expect(fitAdSize(AD_ASIDE_EXTRA + 49)).toBeNull();
 	});
 });
