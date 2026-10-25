@@ -2,7 +2,7 @@
 	import Moon from '@lucide/svelte/icons/moon';
 	import Sun from '@lucide/svelte/icons/sun';
 	import { Button } from '#lib/components/ui/button/index.js';
-	import { isSolved } from '#lib/ads.js';
+	import { RESULTS_DELAY, adForScreen, isSolved, mayBeAdFree } from '#lib/ads.js';
 	import { dictionary } from '#lib/dictionary.js';
 	import {
 		answers,
@@ -13,18 +13,44 @@
 		startGame
 	} from '#lib/stores/gameStore.js';
 	import { toggleMode } from 'mode-watcher';
-	import { onMount } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import AdSlot from './AdSlot.svelte';
 	import AlphabetBoard from './AlphabetBoard.svelte';
 	import WordEntry from './WordEntry.svelte';
 
 	// A puzzle is done when the player reveals the answers, or every letter is used once with
-	// a real word on every line. The ad slot appears once they have played this visit and the
-	// puzzle is done, so opening the page on a finished puzzle shows no ad.
+	// a real word on every line. A results screen with the ad replaces the puzzle a moment after
+	// they have played this visit and the puzzle is done, so opening the page on a finished
+	// puzzle shows no ad. "Review the words" goes back to the puzzle for good: the ad is asked
+	// for once per puzzle.
 	let played = false;
 	let adKey = '';
+	let results = false;
+	let reviewed = '';
+	/** The results content, which the ad is sized to fit under. @type {HTMLElement | undefined} */
+	let content;
+	/** @type {ReturnType<typeof setTimeout> | undefined} */
+	let timer;
 	$: solved = isSolved($fourLetterWords, $answers, $dictionary.words);
 	$: if (played && ($showAnswers || solved)) adKey = $fourLetterWords.join(' ');
+	$: if (adKey && adKey !== reviewed) scheduleResults();
+
+	function scheduleResults() {
+		clearTimeout(timer);
+		// The wait keeps the ad from appearing under the finger that finished the puzzle.
+		timer = setTimeout(() => {
+			if (!adForScreen('results', { buyer: mayBeAdFree() })) return;
+			results = true;
+			scrollTo(0, 0);
+		}, RESULTS_DELAY);
+	}
+	onDestroy(() => clearTimeout(timer));
+
+	function reviewWords() {
+		reviewed = adKey;
+		results = false;
+		scrollTo(0, 0);
+	}
 
 	// On component mount, if there are no 4-letter words,
 	// generate a puzzle. Otherwise, use what's in localStorage.
@@ -52,6 +78,7 @@
 <!-- Stacked on narrow screens, where the sidebar's children join the page grid so the
 board can stick to the top. Sidebar beside the words on wide and sideways screens. -->
 <main
+	hidden={results}
 	class="mx-auto grid max-w-[110rem] gap-3 px-2 py-3 sm:gap-4 sm:px-6 xl:px-10 xl:py-8 two-pane:min-h-dvh two-pane:grid-cols-[clamp(18rem,22vw,26rem)_minmax(0,1fr)] two-pane:content-center two-pane:items-start two-pane:gap-x-[clamp(2rem,3vw,3rem)] short:grid-cols-[15rem_minmax(0,1fr)] short:gap-x-5 short:px-4 short:py-0"
 >
 	<aside
@@ -100,7 +127,7 @@ board can stick to the top. Sidebar beside the words on wide and sideways screen
 			>
 			·
 			<a
-				href="https://ihtfy.com/privacy"
+				href="https://ihtfy.com/privacy/"
 				target="_blank"
 				rel="noopener"
 				class="hover:text-foreground hover:underline">Privacy</a
@@ -118,6 +145,22 @@ board can stick to the top. Sidebar beside the words on wide and sideways screen
 	</div>
 </main>
 
-{#if adKey}
-	<AdSlot {adKey} />
+{#if results}
+	<main class="mx-auto flex max-w-md flex-col gap-3 px-4 py-4">
+		<div bind:this={content} class="flex flex-col gap-3">
+			<h1 class="text-3xl font-extrabold">
+				{solved && !$showAnswers ? 'Solved!' : 'Answers shown'}
+			</h1>
+			<p class="text-sm leading-6">
+				{solved && !$showAnswers
+					? 'Every letter from A to Z, used once.'
+					: 'Start a new puzzle, or look the words over again.'}
+			</p>
+			<div class="flex gap-2 *:flex-1">
+				<Button onclick={handleNewGame} class="bg-blue-600 text-white">New Game</Button>
+				<Button onclick={reviewWords} variant="outline">Review the words</Button>
+			</div>
+		</div>
+		<AdSlot {adKey} above={content} />
+	</main>
 {/if}
