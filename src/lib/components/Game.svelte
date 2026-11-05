@@ -120,6 +120,13 @@ board can stick to the top. Sidebar beside the words on wide and sideways screen
 			class="order-last text-center text-xs text-muted-foreground two-pane:mt-auto two-pane:text-left"
 		>
 			<a
+				href="https://ihtfy.com/projects/"
+				target="_blank"
+				rel="noopener"
+				class="hover:text-foreground hover:underline">More games</a
+			>
+			·
+			<a
 				href="https://ihtfy.com/support/"
 				target="_blank"
 				rel="noopener"
