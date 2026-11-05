@@ -127,13 +127,6 @@ board can stick to the top. Sidebar beside the words on wide and sideways screen
 			>
 			·
 			<a
-				href="https://ihtfy.com/support/"
-				target="_blank"
-				rel="noopener"
-				class="hover:text-foreground hover:underline">Support ♥</a
-			>
-			·
-			<a
 				href="https://ihtfy.com/privacy/"
 				target="_blank"
 				rel="noopener"
