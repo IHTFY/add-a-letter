@@ -39,6 +39,23 @@ describe('showAd', () => {
 		expect(window.ihtfyAds.show).toHaveBeenCalledWith(box, 'a');
 		box.remove();
 	});
+
+	it('does not throw when the loader defines no ad object', async () => {
+		const { showAd } = await loadAds();
+		delete (/** @type {any} */ (window).ihtfyAds);
+		/** @type {unknown[]} */
+		const errors = [];
+		const onRejection = (/** @type {any} */ e) => errors.push(e);
+		process.on('unhandledRejection', onRejection);
+		const box = document.createElement('div');
+		document.body.append(box);
+		showAd(box, 'a');
+		added[0].dispatchEvent(new Event('load'));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		process.off('unhandledRejection', onRejection);
+		box.remove();
+		expect(errors).toEqual([]);
+	});
 });
 
 describe('loadForBuyer', () => {

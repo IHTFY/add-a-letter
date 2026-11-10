@@ -87,7 +87,7 @@ export function loadForBuyer() {
 export function showAd(box, key) {
 	if (!navigator.onLine) return;
 	load().then(
-		() => box.isConnected && window.ihtfyAds.show(box, key),
+		() => box.isConnected && window.ihtfyAds?.show(box, key),
 		() => {}
 	);
 }
