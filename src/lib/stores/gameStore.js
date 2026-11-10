@@ -15,15 +15,23 @@ function createPersistedStore(key, initialValue, isValid = () => true) {
 	// If we're in the browser, sync with localStorage
 	if (typeof window !== 'undefined') {
 		// 1) On load, pull existing data from localStorage
-		const json = localStorage.getItem(key);
-		if (json) {
-			const saved = JSON.parse(json);
-			if (isValid(saved)) store.set(saved);
+		try {
+			const json = localStorage.getItem(key);
+			if (json) {
+				const saved = JSON.parse(json);
+				if (isValid(saved)) store.set(saved);
+			}
+		} catch {
+			// Blocked storage or a damaged value: start from the initial value.
 		}
 
 		// 2) Anytime the store changes, save it to localStorage
 		store.subscribe((value) => {
-			localStorage.setItem(key, JSON.stringify(value));
+			try {
+				localStorage.setItem(key, JSON.stringify(value));
+			} catch {
+				// Blocked or full storage: keep playing without saving.
+			}
 		});
 	}
 
@@ -34,8 +42,11 @@ function createPersistedStore(key, initialValue, isValid = () => true) {
  * Four-letter words & five-letter words
  * are stored and persisted.
  */
-export const fourLetterWords = createPersistedStore('fourLetterWords', []);
-export const fiveLetterWords = createPersistedStore('fiveLetterWords', []);
+const isWordList = (/** @type {number} */ length) => (/** @type {unknown} */ value) =>
+	Array.isArray(value) &&
+	value.every((word) => typeof word === 'string' && new RegExp(`^[a-z]{${length}}$`).test(word));
+export const fourLetterWords = createPersistedStore('fourLetterWords', [], isWordList(4));
+export const fiveLetterWords = createPersistedStore('fiveLetterWords', [], isWordList(5));
 
 /**
  * What the player has typed for each word, saved so a reload or app update keeps their progress.
@@ -56,7 +67,11 @@ export const extraLetterCounts = writable(
 	Object.fromEntries('abcdefghijklmnopqrstuvwxyz'.split('').map((letter) => [letter, 0]))
 );
 
-export const showAnswers = createPersistedStore('showAnswers', false);
+export const showAnswers = createPersistedStore(
+	'showAnswers',
+	false,
+	(value) => typeof value === 'boolean'
+);
 
 export function startGame() {
 	// If the store is empty, generate a new puzzle
