@@ -6,6 +6,11 @@ import { get, writable } from 'svelte/store';
 let readFailed = false;
 /** @type {Array<() => void>} */
 const savers = [];
+// Set while a value from another tab is being applied, or once this tab is reloading to pick up
+// another tab's new puzzle. Nothing is saved then, so this tab never writes what it was just
+// told back over what the other tab has saved since.
+let applyingRemote = false;
+let reloading = false;
 
 /**
  * Create a writable store that automatically
@@ -13,8 +18,14 @@ const savers = [];
  * @param {string} key The localStorage key
  * @param {any} initialValue The initial value
  * @param {(value: unknown) => boolean} [isValid] Ignores saved data in an unexpected shape
+ * @param {boolean} [reloadOnRemoteChange] Reload this tab when another tab saves a different value
  */
-function createPersistedStore(key, initialValue, isValid = () => true) {
+function createPersistedStore(
+	key,
+	initialValue,
+	isValid = () => true,
+	reloadOnRemoteChange = false
+) {
 	// Create a regular writable store
 	const store = writable(initialValue);
 
@@ -39,7 +50,7 @@ function createPersistedStore(key, initialValue, isValid = () => true) {
 
 		// 2) Anytime the store changes, save it to localStorage
 		const save = () => {
-			if (readFailed) return;
+			if (readFailed || applyingRemote || reloading) return;
 			try {
 				localStorage.setItem(key, JSON.stringify(get(store)));
 			} catch {
@@ -48,6 +59,33 @@ function createPersistedStore(key, initialValue, isValid = () => true) {
 		};
 		store.subscribe(save);
 		savers.push(save);
+
+		// 3) Another tab saved this value. A different puzzle restarts this tab from what is saved,
+		// which drops its results screen and ad timer; other values are taken without saving.
+		window.addEventListener('storage', (event) => {
+			if (event.storageArea !== localStorage || event.key !== key || event.newValue === null)
+				return;
+			if (event.newValue === JSON.stringify(get(store))) return;
+			try {
+				// A late event for a value that was replaced since: the newer one has its own event.
+				if (localStorage.getItem(key) !== event.newValue) return;
+				const saved = JSON.parse(event.newValue);
+				if (!isValid(saved)) return;
+				if (reloadOnRemoteChange) {
+					reloading = true;
+					window.location.reload();
+					return;
+				}
+				applyingRemote = true;
+				try {
+					store.set(saved);
+				} finally {
+					applyingRemote = false;
+				}
+			} catch {
+				// A damaged value: keep this tab's.
+			}
+		});
 	}
 
 	return store;
@@ -60,7 +98,7 @@ function createPersistedStore(key, initialValue, isValid = () => true) {
 const isWordList = (/** @type {number} */ length) => (/** @type {unknown} */ value) =>
 	Array.isArray(value) &&
 	value.every((word) => typeof word === 'string' && new RegExp(`^[a-z]{${length}}$`).test(word));
-export const fourLetterWords = createPersistedStore('fourLetterWords', [], isWordList(4));
+export const fourLetterWords = createPersistedStore('fourLetterWords', [], isWordList(4), true);
 export const fiveLetterWords = createPersistedStore('fiveLetterWords', [], isWordList(5));
 
 /**

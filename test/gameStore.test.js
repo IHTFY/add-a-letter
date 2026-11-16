@@ -84,4 +84,79 @@ describe('saved game state', () => {
 		const store = await loadStore();
 		expect(get(store.fourLetterWords)).toEqual(['tree', 'bird']);
 	});
+
+	/** @param {string} key @param {string} value */
+	function otherTabSaves(key, value) {
+		localStorage.setItem(key, value);
+		window.dispatchEvent(
+			new StorageEvent('storage', { key, newValue: value, storageArea: localStorage })
+		);
+	}
+
+	it('reloads when another tab starts a new puzzle, and saves nothing over it first', async () => {
+		localStorage.setItem('fourLetterWords', '["tree","bird"]');
+		localStorage.setItem('fiveLetterWords', '["trees","birds"]');
+		localStorage.setItem('answers', '["trees",""]');
+		const store = await loadStore();
+		const reload = vi.fn();
+		vi.stubGlobal('location', { reload });
+
+		// The other tab starts a new game: it saves the new puzzle, then empty answers.
+		otherTabSaves('fourLetterWords', '["moon","lamp"]');
+		otherTabSaves('fiveLetterWords', '["moons","lamps"]');
+		otherTabSaves('answers', '["",""]');
+		expect(reload).toHaveBeenCalled();
+
+		// Typing in the moments before the reload must not put the old puzzle or answers back.
+		store.answers.set(['trees', '']);
+		store.fourLetterWords.set(['tree', 'bird']);
+		expect(localStorage.getItem('fourLetterWords')).toBe('["moon","lamp"]');
+		expect(localStorage.getItem('answers')).toBe('["",""]');
+	});
+
+	it('takes answers another tab saved without saving them back', async () => {
+		localStorage.setItem('answers', '["a"]');
+		const store = await loadStore();
+		otherTabSaves('answers', '["abc"]');
+		expect(get(store.answers)).toEqual(['abc']);
+		expect(localStorage.getItem('answers')).toBe('["abc"]');
+
+		// This tab saves its own changes as usual afterwards.
+		store.answers.set(['abcd']);
+		expect(localStorage.getItem('answers')).toBe('["abcd"]');
+	});
+
+	it('ignores a late storage event for a value that has since been replaced', async () => {
+		localStorage.setItem('answers', '["tre"]');
+		const store = await loadStore();
+		// This tab saves "trees"; an older event from the other tab, which saved "tre", arrives late.
+		store.answers.set(['trees']);
+		window.dispatchEvent(
+			new StorageEvent('storage', {
+				key: 'answers',
+				newValue: '["tre"]',
+				storageArea: localStorage
+			})
+		);
+		expect(get(store.answers)).toEqual(['trees']);
+		store.answers.set(['trees', 'a']);
+		expect(localStorage.getItem('answers')).toBe('["trees","a"]');
+	});
+
+	it('ignores storage changes that are not a valid saved value or not its own', async () => {
+		localStorage.setItem('answers', '["abc"]');
+		const store = await loadStore();
+		/** @param {string} key @param {string | null} value @param {Storage} [area] */
+		function change(key, value, area = localStorage) {
+			window.dispatchEvent(
+				new StorageEvent('storage', { key, newValue: value, storageArea: area })
+			);
+		}
+		change('answers', '["ABC1"]');
+		change('answers', '["abc"');
+		change('answers', null);
+		change('answers', '["zzz"]', sessionStorage);
+		change('theme', '["zzz"]');
+		expect(get(store.answers)).toEqual(['abc']);
+	});
 });
