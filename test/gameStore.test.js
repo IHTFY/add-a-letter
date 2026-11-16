@@ -47,6 +47,24 @@ describe('saved game state', () => {
 		expect(Object.fromEntries(data)).toEqual(saved);
 	});
 
+	it('a new game replaces a saved value even when it changes nothing in memory', async () => {
+		const data = new Map([['showAnswers', 'false']]);
+		let failReads = true;
+		vi.stubGlobal('localStorage', {
+			getItem: (/** @type {string} */ key) => {
+				if (failReads) throw new DOMException('Denied', 'SecurityError');
+				return data.get(key) ?? null;
+			},
+			setItem: (/** @type {string} */ key, /** @type {string} */ value) => data.set(key, value)
+		});
+		const store = await loadStore();
+		data.set('showAnswers', 'true'); // the saved value the failed read could not see
+		failReads = false;
+		vi.stubGlobal('location', { reload: vi.fn() });
+		store.newGame();
+		expect(data.get('showAnswers')).toBe('false');
+	});
+
 	it('ignores a cut-off saved value', async () => {
 		localStorage.setItem('answers', '["abc"');
 		const store = await loadStore();

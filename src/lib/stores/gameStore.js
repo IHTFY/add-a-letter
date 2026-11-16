@@ -1,9 +1,11 @@
 import { generateWords } from '#lib/generator.js';
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 
 // Set when a saved value could not be read. Nothing is saved after that, so the game started
 // from defaults cannot overwrite what is still in storage, until the player starts a new game.
 let readFailed = false;
+/** @type {Array<() => void>} */
+const savers = [];
 
 /**
  * Create a writable store that automatically
@@ -19,26 +21,33 @@ function createPersistedStore(key, initialValue, isValid = () => true) {
 	// If we're in the browser, sync with localStorage
 	if (typeof window !== 'undefined') {
 		// 1) On load, pull existing data from localStorage
+		let json = null;
 		try {
-			const json = localStorage.getItem(key);
+			json = localStorage.getItem(key);
+		} catch {
+			// Blocked storage: start from the initial value and leave what is saved alone.
+			readFailed = true;
+		}
+		try {
 			if (json) {
 				const saved = JSON.parse(json);
 				if (isValid(saved)) store.set(saved);
 			}
 		} catch {
-			// Blocked storage or a damaged value: start from the initial value.
-			readFailed = true;
+			// A damaged value: start from the initial value.
 		}
 
 		// 2) Anytime the store changes, save it to localStorage
-		store.subscribe((value) => {
+		const save = () => {
 			if (readFailed) return;
 			try {
-				localStorage.setItem(key, JSON.stringify(value));
+				localStorage.setItem(key, JSON.stringify(get(store)));
 			} catch {
 				// Blocked or full storage: keep playing without saving.
 			}
-		});
+		};
+		store.subscribe(save);
+		savers.push(save);
 	}
 
 	return store;
@@ -95,6 +104,8 @@ export function newGame() {
 	extraLetterCounts.set(
 		Object.fromEntries('abcdefghijklmnopqrstuvwxyz'.split('').map((letter) => [letter, 0]))
 	);
+	// A reset that changes nothing in memory (a damaged value read as the default) still replaces it.
+	savers.forEach((save) => save());
 	// HACK clear all user input
 	// [...document.querySelectorAll('input')].forEach((node) => {
 	// 	node.value = '';
