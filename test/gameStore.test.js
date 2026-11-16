@@ -117,21 +117,30 @@ describe('saved game state', () => {
 	it('takes answers another tab saved without saving them back', async () => {
 		localStorage.setItem('answers', '["a"]');
 		const store = await loadStore();
-		// The other tab changes its answers twice before this tab handles the first event.
-		localStorage.setItem('answers', '["ab"]');
-		const first = '["ab"]';
-		localStorage.setItem('answers', '["abc"]');
-		window.dispatchEvent(
-			new StorageEvent('storage', { key: 'answers', newValue: first, storageArea: localStorage })
-		);
-		expect(get(store.answers)).toEqual(['ab']);
-		expect(localStorage.getItem('answers')).toBe('["abc"]');
-
-		// Once that is handled, this tab saves its own changes again.
 		otherTabSaves('answers', '["abc"]');
 		expect(get(store.answers)).toEqual(['abc']);
+		expect(localStorage.getItem('answers')).toBe('["abc"]');
+
+		// This tab saves its own changes as usual afterwards.
 		store.answers.set(['abcd']);
 		expect(localStorage.getItem('answers')).toBe('["abcd"]');
+	});
+
+	it('ignores a late storage event for a value that has since been replaced', async () => {
+		localStorage.setItem('answers', '["tre"]');
+		const store = await loadStore();
+		// This tab saves "trees"; an older event from the other tab, which saved "tre", arrives late.
+		store.answers.set(['trees']);
+		window.dispatchEvent(
+			new StorageEvent('storage', {
+				key: 'answers',
+				newValue: '["tre"]',
+				storageArea: localStorage
+			})
+		);
+		expect(get(store.answers)).toEqual(['trees']);
+		store.answers.set(['trees', 'a']);
+		expect(localStorage.getItem('answers')).toBe('["trees","a"]');
 	});
 
 	it('ignores storage changes that are not a valid saved value or not its own', async () => {

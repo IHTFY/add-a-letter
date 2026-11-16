@@ -67,6 +67,8 @@ function createPersistedStore(
 				return;
 			if (event.newValue === JSON.stringify(get(store))) return;
 			try {
+				// A late event for a value that was replaced since: the newer one has its own event.
+				if (localStorage.getItem(key) !== event.newValue) return;
 				const saved = JSON.parse(event.newValue);
 				if (!isValid(saved)) return;
 				if (reloadOnRemoteChange) {

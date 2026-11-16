@@ -35,6 +35,15 @@
 	$: if (played && ($showAnswers || solved)) adKey = $fourLetterWords.join(' ');
 	$: if (adKey && adKey !== reviewed) scheduleResults();
 
+	// Another tab's answers can make a solved puzzle unfinished again: leave the results.
+	$: if ((adKey || results) && !$showAnswers && !solved) leaveResults();
+
+	function leaveResults() {
+		clearTimeout(timer);
+		results = false;
+		adKey = '';
+	}
+
 	function scheduleResults() {
 		clearTimeout(timer);
 		// The wait keeps the ad from appearing under the finger that finished the puzzle.
