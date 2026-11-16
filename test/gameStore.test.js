@@ -25,6 +25,24 @@ describe('saved game state', () => {
 		expect(get(store.answers)).toEqual(['abc']);
 	});
 
+	it('leaves saved values alone when a read fails', async () => {
+		const saved = {
+			fourLetterWords: '["tree","bird"]',
+			fiveLetterWords: '["trees"]',
+			answers: '["trees"]',
+			showAnswers: 'true'
+		};
+		const data = new Map(Object.entries(saved));
+		vi.stubGlobal('localStorage', {
+			getItem: () => {
+				throw new DOMException('Denied', 'SecurityError');
+			},
+			setItem: (/** @type {string} */ key, /** @type {string} */ value) => data.set(key, value)
+		});
+		await loadStore();
+		expect(Object.fromEntries(data)).toEqual(saved);
+	});
+
 	it('ignores a cut-off saved value', async () => {
 		localStorage.setItem('answers', '["abc"');
 		const store = await loadStore();

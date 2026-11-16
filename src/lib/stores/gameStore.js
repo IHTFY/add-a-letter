@@ -15,6 +15,7 @@ function createPersistedStore(key, initialValue, isValid = () => true) {
 	// If we're in the browser, sync with localStorage
 	if (typeof window !== 'undefined') {
 		// 1) On load, pull existing data from localStorage
+		let readFailed = false;
 		try {
 			const json = localStorage.getItem(key);
 			if (json) {
@@ -23,10 +24,17 @@ function createPersistedStore(key, initialValue, isValid = () => true) {
 			}
 		} catch {
 			// Blocked storage or a damaged value: start from the initial value.
+			readFailed = true;
 		}
 
 		// 2) Anytime the store changes, save it to localStorage
+		// A failed read leaves the saved value alone until the first real change.
+		let skipInitialSave = readFailed;
 		store.subscribe((value) => {
+			if (skipInitialSave) {
+				skipInitialSave = false;
+				return;
+			}
 			try {
 				localStorage.setItem(key, JSON.stringify(value));
 			} catch {
