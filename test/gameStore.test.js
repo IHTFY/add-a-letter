@@ -25,6 +25,46 @@ describe('saved game state', () => {
 		expect(get(store.answers)).toEqual(['abc']);
 	});
 
+	it('leaves saved values alone when a read fails', async () => {
+		const saved = {
+			fourLetterWords: '["tree","bird"]',
+			fiveLetterWords: '["trees"]',
+			answers: '["trees"]',
+			showAnswers: 'true'
+		};
+		const data = new Map(Object.entries(saved));
+		vi.stubGlobal('localStorage', {
+			getItem: () => {
+				throw new DOMException('Denied', 'SecurityError');
+			},
+			setItem: (/** @type {string} */ key, /** @type {string} */ value) => data.set(key, value)
+		});
+		const store = await loadStore();
+		// What the page does at startup and while playing must not replace saved values either.
+		store.startGame();
+		store.answers.set([]);
+		store.showAnswers.set(false);
+		expect(Object.fromEntries(data)).toEqual(saved);
+	});
+
+	it('a new game replaces a saved value even when it changes nothing in memory', async () => {
+		const data = new Map([['showAnswers', 'false']]);
+		let failReads = true;
+		vi.stubGlobal('localStorage', {
+			getItem: (/** @type {string} */ key) => {
+				if (failReads) throw new DOMException('Denied', 'SecurityError');
+				return data.get(key) ?? null;
+			},
+			setItem: (/** @type {string} */ key, /** @type {string} */ value) => data.set(key, value)
+		});
+		const store = await loadStore();
+		data.set('showAnswers', 'true'); // the saved value the failed read could not see
+		failReads = false;
+		vi.stubGlobal('location', { reload: vi.fn() });
+		store.newGame();
+		expect(data.get('showAnswers')).toBe('false');
+	});
+
 	it('ignores a cut-off saved value', async () => {
 		localStorage.setItem('answers', '["abc"');
 		const store = await loadStore();
