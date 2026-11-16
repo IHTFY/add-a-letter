@@ -39,7 +39,11 @@ describe('saved game state', () => {
 			},
 			setItem: (/** @type {string} */ key, /** @type {string} */ value) => data.set(key, value)
 		});
-		await loadStore();
+		const store = await loadStore();
+		// What the page does at startup and while playing must not replace saved values either.
+		store.startGame();
+		store.answers.set([]);
+		store.showAnswers.set(false);
 		expect(Object.fromEntries(data)).toEqual(saved);
 	});
 

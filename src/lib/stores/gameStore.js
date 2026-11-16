@@ -1,6 +1,10 @@
 import { generateWords } from '#lib/generator.js';
 import { writable } from 'svelte/store';
 
+// Set when a saved value could not be read. Nothing is saved after that, so the game started
+// from defaults cannot overwrite what is still in storage, until the player starts a new game.
+let readFailed = false;
+
 /**
  * Create a writable store that automatically
  * syncs to localStorage under the given key.
@@ -15,7 +19,6 @@ function createPersistedStore(key, initialValue, isValid = () => true) {
 	// If we're in the browser, sync with localStorage
 	if (typeof window !== 'undefined') {
 		// 1) On load, pull existing data from localStorage
-		let readFailed = false;
 		try {
 			const json = localStorage.getItem(key);
 			if (json) {
@@ -28,13 +31,8 @@ function createPersistedStore(key, initialValue, isValid = () => true) {
 		}
 
 		// 2) Anytime the store changes, save it to localStorage
-		// A failed read leaves the saved value alone until the first real change.
-		let skipInitialSave = readFailed;
 		store.subscribe((value) => {
-			if (skipInitialSave) {
-				skipInitialSave = false;
-				return;
-			}
+			if (readFailed) return;
 			try {
 				localStorage.setItem(key, JSON.stringify(value));
 			} catch {
@@ -87,6 +85,8 @@ export function startGame() {
 }
 
 export function newGame() {
+	// Starting over on purpose may replace what could not be read.
+	readFailed = false;
 	// Overwrite existing puzzle with a fresh one
 	generateWords();
 	showAnswers.set(false);
