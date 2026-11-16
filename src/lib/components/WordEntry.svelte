@@ -4,6 +4,8 @@
 	import { extraLetterCounts } from '#lib/stores/gameStore.js';
 
 	export let word = '';
+	// The word can appear twice in a puzzle, so the id comes from the position instead.
+	export let index = 0;
 	export let answer = '';
 	let userInput = '';
 	export { userInput as value };
@@ -66,7 +68,7 @@
 	<!-- Fixed width so the inputs line up down each column -->
 	<Label
 		class="w-[5.75em] shrink-0 text-[length:inherit] whitespace-nowrap sm:w-[6.25em]"
-		for={word}
+		for={`word-${index}`}
 	>
 		{word} + {previousExtras || '__'} =
 	</Label>
@@ -95,7 +97,7 @@
 		<!-- Transparent Input Field; text stays at least 16px so iOS doesn't zoom on focus -->
 		<input
 			type="text"
-			id={word}
+			id={`word-${index}`}
 			pattern="[a-zA-Z]{5}"
 			bind:value={userInput}
 			on:input={() => $dictionary.failed && loadDictionary()}

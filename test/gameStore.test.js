@@ -84,4 +84,47 @@ describe('saved game state', () => {
 		const store = await loadStore();
 		expect(get(store.fourLetterWords)).toEqual(['tree', 'bird']);
 	});
+
+	it('picks up a new puzzle another tab started instead of writing the old one over it', async () => {
+		localStorage.setItem('fourLetterWords', '["tree","bird"]');
+		localStorage.setItem('fiveLetterWords', '["trees","birds"]');
+		localStorage.setItem('answers', '["trees",""]');
+		const store = await loadStore();
+
+		// The other tab starts a new game: it saves the new puzzle, then empty answers.
+		/** @param {string} key @param {string} value */
+		function otherTabSaves(key, value) {
+			localStorage.setItem(key, value);
+			window.dispatchEvent(
+				new StorageEvent('storage', { key, newValue: value, storageArea: localStorage })
+			);
+		}
+		otherTabSaves('fourLetterWords', '["moon","lamp"]');
+		otherTabSaves('fiveLetterWords', '["moons","lamps"]');
+		otherTabSaves('answers', '["",""]');
+		expect(get(store.fourLetterWords)).toEqual(['moon', 'lamp']);
+		expect(get(store.answers)).toEqual(['', '']);
+
+		// Typing here now saves answers for the new puzzle, and the puzzle itself is untouched.
+		store.answers.set(['moons', '']);
+		expect(localStorage.getItem('answers')).toBe('["moons",""]');
+		expect(localStorage.getItem('fourLetterWords')).toBe('["moon","lamp"]');
+	});
+
+	it('ignores storage changes that are not a valid saved value or not its own', async () => {
+		localStorage.setItem('answers', '["abc"]');
+		const store = await loadStore();
+		/** @param {string} key @param {string | null} value @param {Storage} [area] */
+		function change(key, value, area = localStorage) {
+			window.dispatchEvent(
+				new StorageEvent('storage', { key, newValue: value, storageArea: area })
+			);
+		}
+		change('answers', '["ABC1"]');
+		change('answers', '["abc"');
+		change('answers', null);
+		change('answers', '["zzz"]', sessionStorage);
+		change('theme', '["zzz"]');
+		expect(get(store.answers)).toEqual(['abc']);
+	});
 });

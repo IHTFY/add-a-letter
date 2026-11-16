@@ -66,6 +66,9 @@
 	}
 
 	function handleNewGame() {
+		// Only a game with typed answers that is neither solved nor given up on has anything to lose.
+		const inProgress = $answers.some(Boolean) && !solved && !$showAnswers;
+		if (inProgress && !confirm('Start a new game? The answers you typed will be lost.')) return;
 		newGame();
 	}
 
@@ -140,7 +143,12 @@ board can stick to the top. Sidebar beside the words on wide and sideways screen
 		class="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] sm:gap-x-6 2xl:grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] 2xl:gap-y-7 short:grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] short:gap-x-3 short:gap-y-5 short:py-3"
 	>
 		{#each $fourLetterWords as word, i (i)}
-			<WordEntry {word} bind:value={$answers[i]} answer={$showAnswers ? $fiveLetterWords[i] : ''} />
+			<WordEntry
+				{word}
+				index={i}
+				bind:value={$answers[i]}
+				answer={$showAnswers ? $fiveLetterWords[i] : ''}
+			/>
 		{/each}
 	</div>
 </main>

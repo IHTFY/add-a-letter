@@ -48,6 +48,20 @@ function createPersistedStore(key, initialValue, isValid = () => true) {
 		};
 		store.subscribe(save);
 		savers.push(save);
+
+		// 3) Another tab saved this value, for example a new puzzle: take it, so this tab's old
+		// puzzle or answers are never saved over it.
+		window.addEventListener('storage', (event) => {
+			if (event.storageArea !== localStorage || event.key !== key || event.newValue === null)
+				return;
+			if (event.newValue === JSON.stringify(get(store))) return;
+			try {
+				const saved = JSON.parse(event.newValue);
+				if (isValid(saved)) store.set(saved);
+			} catch {
+				// A damaged value: keep this tab's.
+			}
+		});
 	}
 
 	return store;
