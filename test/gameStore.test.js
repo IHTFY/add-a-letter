@@ -85,30 +85,53 @@ describe('saved game state', () => {
 		expect(get(store.fourLetterWords)).toEqual(['tree', 'bird']);
 	});
 
-	it('picks up a new puzzle another tab started instead of writing the old one over it', async () => {
+	/** @param {string} key @param {string} value */
+	function otherTabSaves(key, value) {
+		localStorage.setItem(key, value);
+		window.dispatchEvent(
+			new StorageEvent('storage', { key, newValue: value, storageArea: localStorage })
+		);
+	}
+
+	it('reloads when another tab starts a new puzzle, and saves nothing over it first', async () => {
 		localStorage.setItem('fourLetterWords', '["tree","bird"]');
 		localStorage.setItem('fiveLetterWords', '["trees","birds"]');
 		localStorage.setItem('answers', '["trees",""]');
 		const store = await loadStore();
+		const reload = vi.fn();
+		vi.stubGlobal('location', { reload });
 
 		// The other tab starts a new game: it saves the new puzzle, then empty answers.
-		/** @param {string} key @param {string} value */
-		function otherTabSaves(key, value) {
-			localStorage.setItem(key, value);
-			window.dispatchEvent(
-				new StorageEvent('storage', { key, newValue: value, storageArea: localStorage })
-			);
-		}
 		otherTabSaves('fourLetterWords', '["moon","lamp"]');
 		otherTabSaves('fiveLetterWords', '["moons","lamps"]');
 		otherTabSaves('answers', '["",""]');
-		expect(get(store.fourLetterWords)).toEqual(['moon', 'lamp']);
-		expect(get(store.answers)).toEqual(['', '']);
+		expect(reload).toHaveBeenCalled();
 
-		// Typing here now saves answers for the new puzzle, and the puzzle itself is untouched.
-		store.answers.set(['moons', '']);
-		expect(localStorage.getItem('answers')).toBe('["moons",""]');
+		// Typing in the moments before the reload must not put the old puzzle or answers back.
+		store.answers.set(['trees', '']);
+		store.fourLetterWords.set(['tree', 'bird']);
 		expect(localStorage.getItem('fourLetterWords')).toBe('["moon","lamp"]');
+		expect(localStorage.getItem('answers')).toBe('["",""]');
+	});
+
+	it('takes answers another tab saved without saving them back', async () => {
+		localStorage.setItem('answers', '["a"]');
+		const store = await loadStore();
+		// The other tab changes its answers twice before this tab handles the first event.
+		localStorage.setItem('answers', '["ab"]');
+		const first = '["ab"]';
+		localStorage.setItem('answers', '["abc"]');
+		window.dispatchEvent(
+			new StorageEvent('storage', { key: 'answers', newValue: first, storageArea: localStorage })
+		);
+		expect(get(store.answers)).toEqual(['ab']);
+		expect(localStorage.getItem('answers')).toBe('["abc"]');
+
+		// Once that is handled, this tab saves its own changes again.
+		otherTabSaves('answers', '["abc"]');
+		expect(get(store.answers)).toEqual(['abc']);
+		store.answers.set(['abcd']);
+		expect(localStorage.getItem('answers')).toBe('["abcd"]');
 	});
 
 	it('ignores storage changes that are not a valid saved value or not its own', async () => {
