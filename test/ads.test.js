@@ -144,3 +144,12 @@ describe('fitAdSize', () => {
 		expect(fitAdSize(AD_ASIDE_EXTRA + 49)).toBeNull();
 	});
 });
+
+describe('adFits', () => {
+	it('is true only while the aside for that size fits in the space', async () => {
+		const { adFits, AD_ASIDE_EXTRA } = await loadAds();
+		expect(adFits('300x250', AD_ASIDE_EXTRA + 250)).toBe(true);
+		expect(adFits('300x250', AD_ASIDE_EXTRA + 249)).toBe(false);
+		expect(adFits('320x100', AD_ASIDE_EXTRA + 249)).toBe(true);
+	});
+});

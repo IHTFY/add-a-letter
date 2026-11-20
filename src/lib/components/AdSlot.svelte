@@ -1,5 +1,5 @@
 <script>
-	import { AD_SLOT, fitAdSize, showAd } from '#lib/ads.js';
+	import { AD_SLOT, adFits, fitAdSize, showAd } from '#lib/ads.js';
 
 	/** Names the finished puzzle, so coming back to it asks for no new ad. */
 	export let adKey = '';
@@ -12,22 +12,35 @@
 
 	/** Undefined until measured; null when no size fits. @type {string | null | undefined} */
 	let size;
+	/** Whether the box still fits on the screen, which turning the phone can change. */
+	let fits = true;
 	/** @type {HTMLElement | undefined} */
 	let box;
 
-	$: if (above && size === undefined) {
+	/** The height from the end of the content to the bottom of the screen. */
+	function space() {
+		if (!above) return 0;
 		// The grid gap between the content and the aside takes room too.
 		const gap = parseFloat(getComputedStyle(above.parentElement ?? above).rowGap) || 0;
-		size = fitAdSize(innerHeight - above.getBoundingClientRect().bottom - gap);
+		return innerHeight - above.getBoundingClientRect().bottom - scrollY - gap;
+	}
+
+	$: if (above && size === undefined) size = fitAdSize(space());
+	// The ad keeps the size it was asked for. When the screen turns and the box no longer fits,
+	// it is hidden instead of asking for a second ad at another size.
+	function refit() {
+		if (size) fits = adFits(size, space());
 	}
 	$: [width, height] = size?.split('x') ?? [];
 	$: if (box) showAd(box, adKey);
 </script>
 
+<svelte:window on:resize={refit} />
+
 <!-- The Privacy link comes first, then the label, and the box last, so the box keeps over 50px from
 every link (the loader adds "Remove ads" beside Privacy). The box keeps its size whether or not an ad fills it. -->
 {#if size}
-	<aside class="grid justify-items-center text-xs text-muted-foreground">
+	<aside hidden={!fits} class="grid justify-items-center text-xs text-muted-foreground">
 		<a
 			href="https://ihtfy.com/privacy/"
 			target="_blank"
