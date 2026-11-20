@@ -1,4 +1,5 @@
 <script>
+	import '#lib/storageGuard.js';
 	import Moon from '@lucide/svelte/icons/moon';
 	import Sun from '@lucide/svelte/icons/sun';
 	import { Button } from '#lib/components/ui/button/index.js';

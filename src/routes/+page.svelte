@@ -1,4 +1,5 @@
 <script lang="ts">
+	import '#lib/storageGuard.js';
 	import { ModeWatcher } from 'mode-watcher';
 	import { onMount } from 'svelte';
 	import '../app.css';
