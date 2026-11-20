@@ -19,11 +19,20 @@ export const SCREEN_AD_SIZES = ['300x250', '320x100', '320x50'];
 export const AD_ASIDE_EXTRA = 78;
 
 /**
+ * Whether an aside holding an ad of `size` fits in `space` px.
+ * @param {string} size one of SCREEN_AD_SIZES
+ * @param {number} space the height from the end of the content to the bottom of the screen
+ */
+export function adFits(size, space) {
+	return AD_ASIDE_EXTRA + Number(size.split('x')[1]) <= space;
+}
+
+/**
  * The largest screen ad size whose aside fits in `space` px, or null when none does.
  * @param {number} space the height from the end of the content to the bottom of the screen
  */
 export function fitAdSize(space) {
-	return SCREEN_AD_SIZES.find((s) => AD_ASIDE_EXTRA + Number(s.split('x')[1]) <= space) ?? null;
+	return SCREEN_AD_SIZES.find((s) => adFits(s, space)) ?? null;
 }
 
 /**
