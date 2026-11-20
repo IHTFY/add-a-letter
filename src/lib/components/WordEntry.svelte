@@ -102,7 +102,7 @@
 			bind:value={userInput}
 			on:input={() => $dictionary.failed && loadDictionary()}
 			maxlength="5"
-			class="h-9 w-full rounded border border-gray-600 bg-transparent text-center text-transparent uppercase caret-foreground 2xl:h-11 short:h-8"
+			class="h-9 w-full scroll-mt-[calc(var(--board-height,0px)+0.5rem)] rounded border border-gray-600 bg-transparent text-center text-transparent uppercase caret-foreground 2xl:h-11 two-pane:scroll-mt-2 short:h-8"
 			placeholder=""
 			autocomplete="off"
 		/>

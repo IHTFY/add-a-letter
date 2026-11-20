@@ -150,7 +150,7 @@ board can stick to the top. Sidebar beside the words on wide and sideways screen
 
 	<div
 		on:input={() => (played = true)}
-		class="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] sm:gap-x-6 2xl:grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] 2xl:gap-y-7 short:grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] short:gap-x-3 short:gap-y-5 short:py-3"
+		class="grid grid-cols-[repeat(auto-fill,minmax(max(10rem,calc((100%-1rem)/2)),1fr))] gap-x-4 gap-y-6 pb-6 sm:grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] sm:gap-x-6 2xl:grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] 2xl:gap-y-7 two-pane:pb-0 short:grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] short:gap-x-3 short:gap-y-5 short:py-3"
 	>
 		{#each $fourLetterWords as word, i (i)}
 			<WordEntry
