@@ -4,7 +4,7 @@ import { get, writable } from 'svelte/store';
 // Set when a saved value could not be read. Nothing is saved after that, so the game started
 // from defaults cannot overwrite what is still in storage, until the player starts a new game.
 let readFailed = false;
-/** @type {Array<() => void>} */
+/** @type {Array<() => boolean>} */
 const savers = [];
 // Set while a value from another tab is being applied, or once this tab is reloading to pick up
 // another tab's new puzzle. Nothing is saved then, so this tab never writes what it was just
@@ -49,12 +49,15 @@ function createPersistedStore(
 		}
 
 		// 2) Anytime the store changes, save it to localStorage
+		// Returns false when the value could not be written.
 		const save = () => {
-			if (readFailed || applyingRemote || reloading) return;
+			if (readFailed || applyingRemote || reloading) return true;
 			try {
 				localStorage.setItem(key, JSON.stringify(get(store)));
+				return true;
 			} catch {
 				// Blocked or full storage: keep playing without saving.
+				return false;
 			}
 		};
 		store.subscribe(save);
@@ -126,9 +129,36 @@ export const showAnswers = createPersistedStore(
 	(value) => typeof value === 'boolean'
 );
 
+/**
+ * A saved puzzle is usable only when it has a clue and a solution for each of the 26 letters,
+ * and each clue is its solution with one letter taken out.
+ * @param {string[]} clues
+ * @param {string[]} solutions
+ */
+function isCompletePuzzle(clues, solutions) {
+	return (
+		clues.length === 26 &&
+		solutions.length === 26 &&
+		clues.every((clue, i) => {
+			const rest = [...solutions[i]];
+			for (const letter of clue) {
+				const at = rest.indexOf(letter);
+				if (at === -1) return false;
+				rest.splice(at, 1);
+			}
+			return rest.length === 1;
+		})
+	);
+}
+
 export function startGame() {
-	// If the store is empty, generate a new puzzle
+	// Keep a saved puzzle that is whole. Otherwise (nothing saved, or the clues or the solutions
+	// were damaged or do not match) make a new one, because answers typed for the old clues no
+	// longer fit it.
+	if (isCompletePuzzle(get(fourLetterWords), get(fiveLetterWords))) return;
 	generateWords();
+	showAnswers.set(false);
+	answers.set([]);
 }
 
 export function newGame() {
@@ -143,11 +173,13 @@ export function newGame() {
 		Object.fromEntries('abcdefghijklmnopqrstuvwxyz'.split('').map((letter) => [letter, 0]))
 	);
 	// A reset that changes nothing in memory (a damaged value read as the default) still replaces it.
-	savers.forEach((save) => save());
+	const saved = savers.map((save) => save()).every(Boolean);
 	// HACK clear all user input
 	// [...document.querySelectorAll('input')].forEach((node) => {
 	// 	node.value = '';
 	// 	node.previousElementSibling?.replaceChildren();
 	// });
-	window.location.reload();
+	// When the new puzzle could not be saved, the old one would come back on reload. Keep the new
+	// one on screen instead; the old save stays untouched.
+	if (saved) window.location.reload();
 }

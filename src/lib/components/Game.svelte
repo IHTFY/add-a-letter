@@ -62,12 +62,9 @@
 		scrollTo(0, 0);
 	}
 
-	// On component mount, if there are no 4-letter words,
-	// generate a puzzle. Otherwise, use what's in localStorage.
+	// On component mount, generate a puzzle unless a whole one is saved in localStorage.
 	onMount(() => {
-		if ($fourLetterWords.length === 0) {
-			startGame();
-		}
+		startGame();
 	});
 
 	// One saved answer per puzzle word, including for puzzles saved before answers were.
