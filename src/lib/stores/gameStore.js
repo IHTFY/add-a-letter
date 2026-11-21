@@ -158,7 +158,9 @@ export function startGame() {
 	if (isCompletePuzzle(get(fourLetterWords), get(fiveLetterWords))) return;
 	generateWords();
 	showAnswers.set(false);
-	answers.set([]);
+	// The 26 word lines may already be on screen, each bound to its own answer slot, so every
+	// slot needs a string before they draw again.
+	answers.set(Array.from({ length: 26 }, () => ''));
 }
 
 export function newGame() {

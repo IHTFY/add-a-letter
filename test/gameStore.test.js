@@ -100,7 +100,7 @@ describe('saved game state', () => {
 			for (const letter of clue) rest.splice(rest.indexOf(letter), 1);
 			expect(rest).toHaveLength(1);
 		});
-		expect(get(store.answers)).toEqual([]);
+		expect(get(store.answers)).toEqual(Array(26).fill(''));
 	});
 
 	it('keeps a complete saved puzzle and its answers', async () => {
