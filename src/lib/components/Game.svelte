@@ -14,7 +14,8 @@
 		startGame
 	} from '#lib/stores/gameStore.js';
 	import { toggleMode } from 'mode-watcher';
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy, onMount, tick } from 'svelte';
+	import { playLaunchExit } from '#lib/launch.js';
 	import AdSlot from './AdSlot.svelte';
 	import AlphabetBoard from './AlphabetBoard.svelte';
 	import WordEntry from './WordEntry.svelte';
@@ -65,6 +66,8 @@
 	// On component mount, generate a puzzle unless a whole one is saved in localStorage.
 	onMount(() => {
 		startGame();
+		// Once the first puzzle is on screen, an installed-app launch animates into it.
+		tick().then(playLaunchExit);
 	});
 
 	// One saved answer per puzzle word, including for puzzles saved before answers were.
