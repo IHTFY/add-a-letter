@@ -85,6 +85,79 @@ describe('saved game state', () => {
 		expect(get(store.fourLetterWords)).toEqual(['tree', 'bird']);
 	});
 
+	it('rebuilds the whole puzzle when only the solution list is damaged', async () => {
+		const first = await loadStore();
+		first.startGame();
+		localStorage.setItem('fiveLetterWords', '[1, "abcde"]');
+		localStorage.setItem('answers', '["tree"]');
+		const store = await loadStore();
+		store.startGame();
+		const four = get(store.fourLetterWords);
+		const five = get(store.fiveLetterWords);
+		expect(five).toHaveLength(26);
+		four.forEach((/** @type {string} */ clue, /** @type {number} */ i) => {
+			const rest = [...five[i]];
+			for (const letter of clue) rest.splice(rest.indexOf(letter), 1);
+			expect(rest).toHaveLength(1);
+		});
+		expect(get(store.answers)).toEqual([]);
+	});
+
+	it('keeps a complete saved puzzle and its answers', async () => {
+		const first = await loadStore();
+		first.startGame();
+		first.answers.set(['abc']);
+		const clues = localStorage.getItem('fourLetterWords');
+		const store = await loadStore();
+		store.startGame();
+		expect(localStorage.getItem('fourLetterWords')).toBe(clues);
+		expect(get(store.answers)).toEqual(['abc']);
+	});
+
+	it('starts a new puzzle when the clue list is complete but the solutions are too few', async () => {
+		const first = await loadStore();
+		first.startGame();
+		const five = JSON.parse(localStorage.getItem('fiveLetterWords') ?? '[]');
+		localStorage.setItem('fiveLetterWords', JSON.stringify(five.slice(0, 5)));
+		const store = await loadStore();
+		store.startGame();
+		expect(get(store.fiveLetterWords)).toHaveLength(26);
+		expect(get(store.fourLetterWords)).toHaveLength(26);
+	});
+
+	it('keeps the new puzzle on screen when the old save cannot be replaced', async () => {
+		const data = new Map();
+		let full = false;
+		vi.stubGlobal('localStorage', {
+			getItem: (/** @type {string} */ key) => data.get(key) ?? null,
+			setItem: (/** @type {string} */ key, /** @type {string} */ value) => {
+				if (full) throw new DOMException('Quota', 'QuotaExceededError');
+				data.set(key, value);
+			}
+		});
+		const store = await loadStore();
+		store.startGame();
+		store.answers.set(['abc']);
+		const oldClues = data.get('fourLetterWords');
+		full = true;
+		const reload = vi.fn();
+		vi.stubGlobal('location', { reload });
+		store.newGame();
+		expect(reload).not.toHaveBeenCalled();
+		expect(get(store.answers)).toEqual([]);
+		expect(JSON.stringify(get(store.fourLetterWords))).not.toBe(oldClues);
+		expect(data.get('fourLetterWords')).toBe(oldClues);
+	});
+
+	it('reloads after a new game that saved', async () => {
+		const store = await loadStore();
+		store.startGame();
+		const reload = vi.fn();
+		vi.stubGlobal('location', { reload });
+		store.newGame();
+		expect(reload).toHaveBeenCalled();
+	});
+
 	/** @param {string} key @param {string} value */
 	function otherTabSaves(key, value) {
 		localStorage.setItem(key, value);
