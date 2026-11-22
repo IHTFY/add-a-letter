@@ -21,13 +21,16 @@
 	import WordEntry from './WordEntry.svelte';
 
 	// A puzzle is done when the player reveals the answers, or every letter is used once with
-	// a real word on every line. A results screen with the ad replaces the puzzle a moment after
-	// they have played this visit and the puzzle is done, so opening the page on a finished
-	// puzzle shows no ad. "Review the words" goes back to the puzzle for good: the ad is asked
-	// for once per puzzle.
+	// a real word on every line. A results screen replaces the puzzle a moment after they have
+	// played this visit and the puzzle is done, so opening the page on a finished puzzle shows
+	// no results and no ad. The ad box is only for a player who may not have bought ad-free: a
+	// buyer gets the same results with no box. "Review the words" goes back to the puzzle for
+	// good: the results, and the ad, are asked for once per puzzle.
 	let played = false;
 	let adKey = '';
 	let results = false;
+	/** Whether the results hold an ad box, decided when they appear. */
+	let withAd = false;
 	let reviewed = '';
 	/** The results content, which the ad is sized to fit under. @type {HTMLElement | undefined} */
 	let content;
@@ -50,7 +53,7 @@
 		clearTimeout(timer);
 		// The wait keeps the ad from appearing under the finger that finished the puzzle.
 		timer = setTimeout(() => {
-			if (!adForScreen('results', { buyer: mayBeAdFree() })) return;
+			withAd = !!adForScreen('results', { buyer: mayBeAdFree() });
 			results = true;
 			scrollTo(0, 0);
 		}, RESULTS_DELAY);
@@ -179,6 +182,8 @@ board can stick to the top. Sidebar beside the words on wide and sideways screen
 				<Button onclick={reviewWords} variant="outline">Review the words</Button>
 			</div>
 		</div>
-		<AdSlot {adKey} above={content} />
+		{#if withAd}
+			<AdSlot {adKey} above={content} />
+		{/if}
 	</main>
 {/if}
