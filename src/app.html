@@ -69,9 +69,15 @@
 					event.stopImmediatePropagation();
 					// A touch's click comes after the copy is gone, aimed at whatever is under the finger.
 					if (event.type === 'pointerdown' && event.isPrimary && event.button === 0) {
-						const spare = () => removeEventListener('click', eat, true);
+						// With a mouse the copy can vanish before the click fires, so the next press also drops the guard.
+						const spare = () => {
+							removeEventListener('click', eat, true);
+							removeEventListener('pointercancel', spare);
+							removeEventListener('pointerdown', spare, true);
+						};
 						addEventListener('click', eat, { capture: true, once: true });
-						addEventListener('pointercancel', spare, { once: true });
+						addEventListener('pointercancel', spare);
+						addEventListener('pointerdown', spare, true);
 						setTimeout(spare, 1000);
 					}
 					skipped = true;
