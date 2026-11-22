@@ -54,6 +54,11 @@ function button(text) {
 	return [...document.querySelectorAll('button')].find((b) => b.textContent?.trim() === text);
 }
 
+/** The puzzle view (the first `main`), which the results screen hides while it shows. */
+function puzzle() {
+	return /** @type {HTMLElement} */ (document.querySelector('main'));
+}
+
 async function showAnswers() {
 	button('Show Answers')?.click();
 	flushSync();
@@ -106,11 +111,16 @@ describe('results screen', { timeout: 60000 }, () => {
 		if (token) localStorage.setItem('ihtfy-ad-free', token);
 		await mountGame();
 		await showAnswers();
-		button('Review the words')?.click();
+		const review = button('Review the words');
+		expect(review).toBeTruthy();
+		expect(puzzle().hidden).toBe(true);
+		review?.click();
 		flushSync();
+		expect(puzzle().hidden).toBe(false);
 		await vi.advanceTimersByTimeAsync(RESULTS_DELAY * 3);
 		flushSync();
 		expect(button('Review the words')).toBeUndefined();
-		expect(document.querySelectorAll('input')).toHaveLength(26);
+		expect(puzzle().hidden).toBe(false);
+		expect(puzzle().querySelectorAll('input')).toHaveLength(26);
 	});
 });
