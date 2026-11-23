@@ -12,7 +12,7 @@
 </script>
 
 <!-- Browser bar colors match the page background in each mode -->
-<ModeWatcher themeColors={{ light: '#f2f2f2', dark: '#020817' }} />
+<ModeWatcher themeColors={{ light: '#f8edda', dark: '#191715' }} />
 
 <Game />
 <AppUpdater />

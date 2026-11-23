@@ -63,14 +63,19 @@
 </script>
 
 <div
-	class="flex items-center justify-center gap-1.5 text-base font-extrabold uppercase sm:gap-2 sm:text-lg xl:text-xl 2xl:text-2xl short:text-base"
+	class="flex items-center justify-center gap-1.5 border-b border-border pb-[1.375rem] text-base font-extrabold uppercase sm:gap-2 sm:text-lg xl:text-xl 2xl:text-2xl short:text-base"
 >
 	<!-- Fixed width so the inputs line up down each column -->
 	<Label
 		class="w-[5.75em] shrink-0 text-[length:inherit] whitespace-nowrap sm:w-[6.25em]"
 		for={`word-${index}`}
 	>
-		{word} + {previousExtras || '__'} =
+		<span class="font-serif font-bold">{word}</span> +
+		<!-- The added letter goes in red on its own red line, like a proofreader's insertion. -->
+		<span
+			class="inline-block min-w-[1.25em] border-b-2 border-mark text-center leading-tight text-mark"
+			>{previousExtras || '\u00a0'}<span class="sr-only">{previousExtras ? '' : '__'}</span></span
+		> =
 	</Label>
 
 	<!-- Overlayed container for styling input -->
@@ -84,9 +89,11 @@
 					.filter((c) => c === char).length <= word.split('').filter((c) => c === char).length}
 					<span>{char}</span> <!-- Normal letter (within expected count) -->
 				{:else}
+					<!-- The added letter, in red; wavy when another word already added it. -->
 					<span
-						class:text-red-600={$extraLetterCounts[char] > 1}
-						class:text-green-600={$extraLetterCounts[char] <= 1}
+						class="text-mark"
+						class:underline={$extraLetterCounts[char] > 1}
+						class:decoration-wavy={$extraLetterCounts[char] > 1}
 					>
 						{char}
 					</span>
@@ -102,7 +109,7 @@
 			bind:value={userInput}
 			on:input={() => $dictionary.failed && loadDictionary()}
 			maxlength="5"
-			class="h-9 w-full scroll-mt-[calc(var(--board-height,0px)+0.5rem)] rounded border border-gray-600 bg-transparent text-center text-transparent uppercase caret-foreground 2xl:h-11 two-pane:scroll-mt-2 short:h-8"
+			class="h-9 w-full scroll-mt-[calc(var(--board-height,0px)+0.5rem)] rounded-none border-0 border-b-2 border-foreground/70 bg-transparent text-center text-transparent uppercase caret-foreground 2xl:h-11 two-pane:scroll-mt-2 short:h-8"
 			placeholder=""
 			autocomplete="off"
 		/>
