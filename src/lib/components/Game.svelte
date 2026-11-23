@@ -100,8 +100,10 @@ board can stick to the top. Sidebar beside the words on wide and sideways screen
 	<aside
 		class="contents two-pane:sticky two-pane:top-0 two-pane:flex two-pane:max-h-dvh two-pane:flex-col two-pane:gap-4 two-pane:overflow-y-auto short:gap-2 short:py-3"
 	>
-		<header class="flex items-center justify-between gap-2">
-			<h1 class="text-3xl font-extrabold sm:text-4xl 2xl:text-5xl short:text-2xl">Add A Letter</h1>
+		<header class="flex items-center justify-between gap-2 border-b-2 border-mark pb-2">
+			<h1 class="font-serif text-3xl font-bold sm:text-4xl 2xl:text-5xl short:text-2xl">
+				Add A Letter
+			</h1>
 			<Button onclick={toggleMode} variant="outline" size="icon" class="shrink-0 short:size-8">
 				<Sun
 					class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
@@ -122,11 +124,12 @@ board can stick to the top. Sidebar beside the words on wide and sideways screen
 		</p>
 
 		<div class="flex gap-2 *:flex-1 sm:*:flex-none two-pane:*:flex-1">
-			<Button onclick={handleNewGame} class="bg-blue-600 text-white short:h-8">New Game</Button>
+			<Button onclick={handleNewGame} class="short:h-8">New Game</Button>
 			<Button
 				onclick={handleShowAnswers}
 				disabled={$showAnswers}
-				class="bg-red-600 text-white short:h-8">Show Answers</Button
+				variant="outline"
+				class="border-foreground short:h-8">Show Answers</Button
 			>
 		</div>
 
@@ -153,7 +156,7 @@ board can stick to the top. Sidebar beside the words on wide and sideways screen
 
 	<div
 		on:input={() => (played = true)}
-		class="grid grid-cols-[repeat(auto-fill,minmax(max(10rem,calc((100%-1rem)/2)),1fr))] gap-x-4 gap-y-6 pb-6 sm:grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] sm:gap-x-6 2xl:grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] 2xl:gap-y-7 two-pane:pb-0 short:grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] short:gap-x-3 short:gap-y-5 short:py-3"
+		class="grid grid-cols-[repeat(auto-fill,minmax(max(10rem,calc((100%-1rem)/2)),1fr))] gap-x-4 gap-y-1.5 pb-6 sm:grid-cols-[repeat(auto-fill,minmax(13rem,1fr))] sm:gap-x-6 2xl:grid-cols-[repeat(auto-fill,minmax(17rem,1fr))] 2xl:gap-y-2 two-pane:pb-0 short:grid-cols-[repeat(auto-fill,minmax(10.5rem,1fr))] short:gap-x-3 short:gap-y-1 short:py-3"
 	>
 		{#each $fourLetterWords as word, i (i)}
 			<WordEntry
@@ -169,7 +172,7 @@ board can stick to the top. Sidebar beside the words on wide and sideways screen
 {#if results}
 	<main class="mx-auto flex max-w-md flex-col gap-3 px-4 py-4">
 		<div bind:this={content} class="flex flex-col gap-3">
-			<h1 class="text-3xl font-extrabold">
+			<h1 class="font-serif text-3xl font-bold">
 				{solved && !$showAnswers ? 'Solved!' : 'Answers shown'}
 			</h1>
 			<p class="text-sm leading-6">
@@ -178,8 +181,10 @@ board can stick to the top. Sidebar beside the words on wide and sideways screen
 					: 'Start a new puzzle, or look the words over again.'}
 			</p>
 			<div class="flex gap-2 *:flex-1">
-				<Button onclick={handleNewGame} class="bg-blue-600 text-white">New Game</Button>
-				<Button onclick={reviewWords} variant="outline">Review the words</Button>
+				<Button onclick={handleNewGame}>New Game</Button>
+				<Button onclick={reviewWords} variant="outline" class="border-foreground"
+					>Review the words</Button
+				>
 			</div>
 		</div>
 		{#if withAd}

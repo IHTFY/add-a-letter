@@ -18,67 +18,73 @@
 
 @layer base {
 	:root {
-		--background: 0 0% 95%;
-		--foreground: 222.2 84% 4.9%;
+		/* Proofreader: cream paper, dark ink, and a red pen for the letters you add. */
+		--background: 38 68% 91%;
+		--foreground: 30 3% 14%;
 
-		--muted: 210 40% 96.1%;
-		--muted-foreground: 215.4 16.3% 44%;
+		--muted: 36 48% 82%;
+		--muted-foreground: 30 9% 38%;
 
-		--popover: 0 0% 100%;
-		--popover-foreground: 222.2 84% 4.9%;
+		--popover: 41 100% 96%;
+		--popover-foreground: 30 3% 14%;
 
-		--card: 0 0% 100%;
-		--card-foreground: 222.2 84% 4.9%;
+		--card: 41 100% 96%;
+		--card-foreground: 30 3% 14%;
 
-		--border: 214.3 31.8% 91.4%;
-		--input: 214.3 31.8% 91.4%;
+		--border: 36 43% 81%;
+		--input: 36 6% 48%;
 
-		--primary: 222.2 47.4% 11.2%;
-		--primary-foreground: 210 40% 98%;
+		--primary: 30 3% 14%;
+		--primary-foreground: 41 100% 96%;
 
-		--secondary: 210 40% 96.1%;
-		--secondary-foreground: 222.2 47.4% 11.2%;
+		--secondary: 38 52% 87%;
+		--secondary-foreground: 30 3% 14%;
 
-		--accent: 210 40% 96.1%;
-		--accent-foreground: 222.2 47.4% 11.2%;
+		--accent: 38 52% 87%;
+		--accent-foreground: 30 3% 14%;
 
-		--destructive: 0 72.2% 50.6%;
-		--destructive-foreground: 210 40% 98%;
+		--destructive: 4 72% 41%;
+		--destructive-foreground: 41 100% 96%;
 
-		--ring: 222.2 84% 4.9%;
+		/* The red pen: added letters, crossed-off letters, and the rule under the title. */
+		--mark: 4 72% 41%;
+
+		--ring: 30 3% 14%;
 
 		--radius: 0.5rem;
 	}
 
 	.dark {
-		--background: 222.2 84% 4.9%;
-		--foreground: 210 40% 98%;
+		--background: 30 9% 9%;
+		--foreground: 38 58% 89%;
 
-		--muted: 217.2 32.6% 17.5%;
-		--muted-foreground: 215 20.2% 65.1%;
+		--muted: 30 14% 20%;
+		--muted-foreground: 35 14% 64%;
 
-		--popover: 222.2 84% 4.9%;
-		--popover-foreground: 210 40% 98%;
+		--popover: 30 9% 13%;
+		--popover-foreground: 38 58% 89%;
 
-		--card: 222.2 84% 4.9%;
-		--card-foreground: 210 40% 98%;
+		--card: 30 9% 13%;
+		--card-foreground: 38 58% 89%;
 
-		--border: 217.2 32.6% 17.5%;
-		--input: 217.2 32.6% 17.5%;
+		--border: 33 12% 19%;
+		--input: 32 8% 45%;
 
-		--primary: 210 40% 98%;
-		--primary-foreground: 222.2 47.4% 11.2%;
+		--primary: 38 58% 89%;
+		--primary-foreground: 30 9% 9%;
 
-		--secondary: 217.2 32.6% 17.5%;
-		--secondary-foreground: 210 40% 98%;
+		--secondary: 30 10% 16%;
+		--secondary-foreground: 38 58% 89%;
 
-		--accent: 217.2 32.6% 17.5%;
-		--accent-foreground: 210 40% 98%;
+		--accent: 30 10% 16%;
+		--accent-foreground: 38 58% 89%;
 
-		--destructive: 0 62.8% 30.6%;
-		--destructive-foreground: 210 40% 98%;
+		--destructive: 5 79% 65%;
+		--destructive-foreground: 30 9% 9%;
 
-		--ring: 212.7 26.8% 83.9%;
+		--mark: 5 79% 65%;
+
+		--ring: 38 58% 89%;
 	}
 }
 
@@ -94,6 +100,7 @@
 	--color-secondary-foreground: hsl(var(--secondary-foreground));
 	--color-destructive: hsl(var(--destructive));
 	--color-destructive-foreground: hsl(var(--destructive-foreground));
+	--color-mark: hsl(var(--mark));
 	--color-muted: hsl(var(--muted));
 	--color-muted-foreground: hsl(var(--muted-foreground));
 	--color-accent: hsl(var(--accent));

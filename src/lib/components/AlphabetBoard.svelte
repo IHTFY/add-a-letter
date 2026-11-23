@@ -28,15 +28,32 @@
 	class="sticky top-0 z-10 mx-auto grid w-full max-w-xl grid-cols-13 gap-1 bg-background py-2 two-pane:static two-pane:grid-cols-9 two-pane:gap-1.5 two-pane:py-0"
 >
 	{#each 'abcdefghijklmnopqrstuvwxyz'.split('') as letter (letter)}
+		{@const count = $extraLetterCounts?.[letter] ?? 0}
+		<!-- A used letter is struck through once; one used twice is crossed out, so the shape tells them apart without the red. -->
 		<li
-			class="inline-flex aspect-square h-auto w-full items-center justify-center rounded-md p-0 text-lg leading-none font-medium text-primary-foreground uppercase sm:text-2xl 2xl:text-3xl short:text-lg {$extraLetterCounts?.[
-				letter
-			] > 1
-				? 'bg-red-500 outline-red-500 outline-dotted'
-				: 'bg-green-500'} {$extraLetterCounts?.[letter] > 0 ? 'opacity-50' : ''}"
+			class="relative inline-flex aspect-square h-auto w-full items-center justify-center rounded-sm border border-input p-0 text-lg leading-none font-semibold uppercase sm:text-2xl 2xl:text-3xl short:text-lg {count >
+			1
+				? 'bg-mark/15 text-foreground/60'
+				: count
+					? 'bg-muted text-foreground/60'
+					: 'bg-card text-foreground'}"
 		>
 			{letter}
-			{#if $extraLetterCounts?.[letter] > 0}<span class="sr-only">used</span>{/if}
+			{#if count > 0}
+				<span class="strike -rotate-45" aria-hidden="true"></span>
+				<span class="sr-only">used</span>
+			{/if}
+			{#if count > 1}<span class="strike rotate-45" aria-hidden="true"></span>{/if}
 		</li>
 	{/each}
 </ul>
+
+<style>
+	.strike {
+		position: absolute;
+		inset: 46% 12% auto;
+		height: max(2px, 8%);
+		border-radius: 9999px;
+		background: hsl(var(--mark));
+	}
+</style>
