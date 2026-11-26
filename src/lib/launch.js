@@ -22,9 +22,6 @@ export function playLaunchExit() {
 				{ backgroundColor: ['#16a34a', 'rgb(22 163 74 / 0)'] },
 				{ duration: 600, easing: 'ease-in', fill: 'forwards' }
 			),
-			document
-				.getElementById('launch-name')
-				?.animate({ opacity: [1, 0] }, { duration: 150, fill: 'forwards' }),
 			icon.animate(
 				{
 					transform: ['none', `translate(${dx}px, ${dy}px) scale(${scale})`],
@@ -34,6 +31,6 @@ export function playLaunchExit() {
 				},
 				{ duration: 900, easing, fill: 'forwards' }
 			)
-		].filter((a) => a !== undefined);
+		];
 	});
 }
